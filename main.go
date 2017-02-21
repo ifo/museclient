@@ -59,7 +59,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	results, err := config.Muse.GetJobs(r.Form)
 	if err != nil {
 		log.Println(err)
-		// return 500
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
@@ -67,7 +67,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	pageVal, err := strconv.Atoi(r.Form["page"][0])
 	if err != nil {
 		log.Println(err)
-		// return 500
+		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
@@ -82,7 +82,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	sp := SearchPage{Form: r.Form, Results: results}
 	if err := config.Search.Execute(w, sp); err != nil {
 		log.Println(err)
-		// return 500
+		http.Error(w, "Internal Server Error", 500)
 	}
 }
 
@@ -90,6 +90,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	// Display the index page.
 	if err := config.Index.Execute(w, nil); err != nil {
 		log.Println(err)
-		// return 500
+		http.Error(w, "Internal Server Error", 500)
 	}
 }
