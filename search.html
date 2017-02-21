@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    <a href="/">Back to Search</a>
+    <h3>Job Results</h3>
+    <form action="search" method="POST">
+      {{range $k, $val := .Form}}
+        {{if eq $k "page" "next" "prev"}}
+        {{else}}
+          {{range $val}}
+            <input type="text" name="{{$k}}" value="{{.}}" hidden />
+          {{end}}
+        {{end}}
+      {{end}}
+      {{if .Form.prev}}
+        <button type="submit" name="page" value="{{index .Form.prev 0}}">Previous Page</button>
+      {{end}}
+      <button type="submit" name="page" value="{{index .Form.next 0}}">Next Page</button>
+    </form>
+    {{range $k, $val := .Results}}
+      {{$k}}, {{$val}}
+    {{end}}
+  </body>
+</html>
