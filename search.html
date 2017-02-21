@@ -19,8 +19,10 @@
       {{end}}
       <button type="submit" name="page" value="{{index .Form.next 0}}">Next Page</button>
     </form>
-    {{range $k, $val := .Results}}
-      {{$k}}, {{$val}}
+    {{range .Results}}
+      <p><u>{{.Name}}</u> at <b>{{.Company.Name}}</b></p>
+    {{else}}
+      <p>No results found</p>
     {{end}}
   </body>
 </html>

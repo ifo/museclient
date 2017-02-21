@@ -10,10 +10,29 @@ import (
 	"strconv"
 )
 
+type Config struct {
+	Muse   Muse
+	Index  *template.Template
+	Search *template.Template
+}
+
+// Global Config
+var config Config
+
 func main() {
 	// Setup config.
 	port := flag.Int("port", 3000, "Port to run the server on")
+	apiUrl := flag.String("apiurl", "https://api-v2.themuse.com/jobs", "The Muse api url")
+	apiKey := flag.String("apikey", "", "The Muse api key")
+	indexTemplate := flag.String("index", "index.html", "The index.html file location")
+	searchTemplate := flag.String("search", "search.html", "The search.html file location")
 	flag.Parse()
+
+	config = Config{
+		Muse:   Muse{Url: *apiUrl, ApiKey: *apiKey},
+		Index:  template.Must(template.ParseFiles(*indexTemplate)),
+		Search: template.Must(template.ParseFiles(*searchTemplate)),
+	}
 
 	// Setup routes.
 	http.HandleFunc("/", index)
@@ -25,7 +44,7 @@ func main() {
 
 type SearchPage struct {
 	Form    url.Values
-	Results map[string]string
+	Results []Result
 }
 
 func search(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +53,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 	// Ensure there is a page value.
 	if _, ok := r.Form["page"]; !ok {
 		r.Form.Set("page", "0")
+	}
+
+	// Get job results.
+	results, err := config.Muse.GetJobs(r.Form)
+	if err != nil {
+		log.Println(err)
+		// return 500
+		return
 	}
 
 	// Get the page value as an int for the previous and next buttons.
@@ -50,29 +77,17 @@ func search(w http.ResponseWriter, r *http.Request) {
 		r.Form.Set("prev", strconv.Itoa(pageVal-1))
 	}
 
-	search, err := template.ParseFiles("./search.html")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// Display the search page.
-	sp := SearchPage{Form: r.Form, Results: map[string]string{"example": "result"}}
-	if err := search.Execute(w, sp); err != nil {
+	sp := SearchPage{Form: r.Form, Results: results}
+	if err := config.Search.Execute(w, sp); err != nil {
 		log.Println(err)
 		// return 500
 	}
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	idx, err := template.ParseFiles("./index.html")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// Display the index page.
-	if err := idx.Execute(w, nil); err != nil {
+	if err := config.Index.Execute(w, nil); err != nil {
 		log.Println(err)
 		// return 500
 	}
