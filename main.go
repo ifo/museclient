@@ -72,6 +72,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the previous and next buttons.
+	// TODO: Remove the next button when there are no more pages to view.
 	r.Form.Set("next", strconv.Itoa(pageVal+1))
 	if pageVal > 0 {
 		r.Form.Set("prev", strconv.Itoa(pageVal-1))
